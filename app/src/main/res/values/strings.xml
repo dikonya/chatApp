@@ -9,10 +9,12 @@
     <string name="signin">SIGN IN</string>
     <string name="create_new_account">Create New Account</string>
     <string name="edit_profile">Edit Profile</string>
+    <string name="password_change">Password Change</string>
     <string name="add_image">Add Image</string>
     <string name="name">Name</string>
     <string name="confirm_password">Confirm Password</string>
-    <string name="sign_up">SIGN UP\n</string>
+    <string name="old_password">Old Password</string>
+    <string name="sign_up">SIGN UP</string>
     <string name="select_user">Select User</string>
     <string name="type_a_message">Type a message</string>
     <string name="online">Online</string>

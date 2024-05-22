@@ -81,6 +81,10 @@ public class ProfileActivity extends BaseActivity {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             pickImage.launch(intent);
         });
+
+        binding.buttonChangePassword.setOnClickListener(v ->
+                startActivity(new Intent(getApplicationContext(), PasswordChangeActivity.class)));
+
     }
 
     private void showToast(String message) {
@@ -100,13 +104,16 @@ public class ProfileActivity extends BaseActivity {
                 .addOnSuccessListener(documentReference -> {
                     preferenceManager.putString(Constants.KEY_NAME, binding.inputName.getText().toString());
                     preferenceManager.putString(Constants.KEY_IMAGE, encodedImage);
+
+                    showToast("Your data has been updated");
+
+                    setResult(RESULT_OK);
+                    finish();
                 })
                 .addOnFailureListener(exception -> {
                     showToast(exception.getMessage());
                 }).addOnCompleteListener(task -> {
                     loading(false);
-                    setResult(RESULT_OK);
-                    finish();
                 });
     }
 
@@ -172,7 +179,5 @@ public class ProfileActivity extends BaseActivity {
     private void toggleDisabledFields(boolean value){
         binding.inputName.setEnabled(value);
         binding.inputEmail.setEnabled(value);
-
-
     }
 }
