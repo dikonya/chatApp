@@ -1,5 +1,6 @@
 package com.example.chatapp.activities;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -46,6 +47,8 @@ public class ChatActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityChatBinding.inflate(getLayoutInflater());
+        binding.textAvailability.setVisibility(View.GONE); // Чтобы не мелькало при первом входе
+
         setContentView(binding.getRoot());
         setListeners();
         loadReceiverDetails();
@@ -169,6 +172,11 @@ public class ChatActivity extends BaseActivity {
     private void setListeners() {
         binding.imageBack.setOnClickListener(v -> onBackPressed());
         binding.layoutSend.setOnClickListener(v -> sendMessage());
+        binding.imageInfo.setOnClickListener(v -> {
+            Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
+            i.putExtra("uid", receiverUser.id);
+            startActivity(i);
+        });
     }
 
     private String getReadableDateTime(Date date) {

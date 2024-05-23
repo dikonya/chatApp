@@ -81,7 +81,6 @@ public class MainActivity extends BaseActivity implements ConversionListener {
         });
     }
 
-
     private void loadUserDetails() {
         binding.textName.setText(preferenceManager.getString(Constants.KEY_NAME));
         byte[] bytes = Base64.decode(preferenceManager.getString(Constants.KEY_IMAGE), Base64.DEFAULT);

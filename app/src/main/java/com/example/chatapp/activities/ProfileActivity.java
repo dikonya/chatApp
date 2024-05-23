@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import com.example.chatapp.databinding.ActivityProfileBinding;
 import com.example.chatapp.utilities.Constants;
 import com.example.chatapp.utilities.PreferenceManager;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -39,19 +40,37 @@ public class ProfileActivity extends BaseActivity {
         setContentView(binding.getRoot());
         database = FirebaseFirestore.getInstance();
         preferenceManager = new PreferenceManager(getApplicationContext());
-        loadUserDetails();
+
+        toggleDisabledFields(false);
+        Bundle extras = getIntent().getExtras();
+
+        binding.textAddImage.setVisibility(View.GONE);
+
+        if (extras != null) {
+            String uid = extras.getString("uid");
+
+            loadUserDetails(uid);
+            binding.buttonSave.setVisibility(View.GONE);
+            binding.buttonChangePassword.setVisibility(View.GONE);
+            binding.editProfileLabel.setVisibility(View.GONE);
+            binding.lookProfileLabel.setVisibility(View.VISIBLE);
+        } else {
+            loadUserDetails(preferenceManager.getString(Constants.KEY_USER_ID))
+                    .addOnSuccessListener(command -> {
+                        toggleDisabledFields(true);
+                        setListeners();
+                    });
+        }
     }
 
-    private void loadImageFromDB(String base64String){
+    private void loadImageFromDB(String base64String) {
         byte[] bytes = Base64.decode(base64String, Base64.DEFAULT);
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         binding.imageProfile.setImageBitmap(bitmap);
     }
 
-    private void loadUserDetails() {
-        toggleDisabledFields(false);
-
-        database.collection(Constants.KEY_COLLECTION_USERS).document( preferenceManager.getString(Constants.KEY_USER_ID))
+    private Task<DocumentSnapshot> loadUserDetails(String uid) {
+        return database.collection(Constants.KEY_COLLECTION_USERS).document(uid)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
@@ -61,9 +80,6 @@ public class ProfileActivity extends BaseActivity {
                         binding.inputEmail.setText(documentSnapshot.getString(Constants.KEY_EMAIL));
                         encodedImage = documentSnapshot.getString(Constants.KEY_IMAGE);
                         loadImageFromDB(encodedImage);
-
-                        toggleDisabledFields(true);
-                        setListeners();
                     } else {
                         showToast("Unable to load data");
                     }
@@ -134,6 +150,7 @@ public class ProfileActivity extends BaseActivity {
                     if (result.getData() != null) {
                         Uri imageUri = result.getData().getData();
                         try {
+                            assert imageUri != null;
                             InputStream inputStream = getContentResolver().openInputStream(imageUri);
                             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                             binding.imageProfile.setImageBitmap(bitmap);
@@ -176,7 +193,7 @@ public class ProfileActivity extends BaseActivity {
         }
     }
 
-    private void toggleDisabledFields(boolean value){
+    private void toggleDisabledFields(boolean value) {
         binding.inputName.setEnabled(value);
         binding.inputEmail.setEnabled(value);
     }

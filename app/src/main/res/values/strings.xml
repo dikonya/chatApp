@@ -9,6 +9,7 @@
     <string name="signin">SIGN IN</string>
     <string name="create_new_account">Create New Account</string>
     <string name="edit_profile">Edit Profile</string>
+    <string name="look_profile">Profile</string>
     <string name="password_change">Password Change</string>
     <string name="add_image">Add Image</string>
     <string name="name">Name</string>
