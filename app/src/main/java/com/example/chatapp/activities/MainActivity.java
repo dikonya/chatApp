@@ -18,8 +18,10 @@ import com.example.chatapp.models.ChatMessage;
 import com.example.chatapp.models.User;
 import com.example.chatapp.utilities.Constants;
 import com.example.chatapp.utilities.PreferenceManager;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -100,6 +102,19 @@ public class MainActivity extends BaseActivity implements ConversionListener {
                 .addSnapshotListener(eventListener);
     }
 
+    private Task<DocumentSnapshot> loadChatImageByUser(ChatMessage chatMessage, String uid) {
+        return database.collection(Constants.KEY_COLLECTION_USERS)
+                .document(uid)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        DocumentSnapshot documentSnapshot = task.getResult();
+
+                        chatMessage.conversionImage = documentSnapshot.getString(Constants.KEY_IMAGE);
+                    }
+                });
+    }
+
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
         if (error != null) {
             return;
@@ -112,18 +127,28 @@ public class MainActivity extends BaseActivity implements ConversionListener {
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.senderId = senderId;
                     chatMessage.receiverId = receiverId;
+
+                    String uidOfImage;
+
                     if (preferenceManager.getString(Constants.KEY_USER_ID).equals(senderId)) {
-                        chatMessage.conversionImage = documentChange.getDocument().getString(Constants.KEY_RECEIVER_IMAGE);
+                        uidOfImage = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+
                         chatMessage.conversionName = documentChange.getDocument().getString(Constants.KEY_RECEIVER_NAME);
                         chatMessage.conversionId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                     } else {
-                        chatMessage.conversionImage = documentChange.getDocument().getString(Constants.KEY_SENDER_IMAGE);
+                        uidOfImage = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
+
                         chatMessage.conversionName = documentChange.getDocument().getString(Constants.KEY_SENDER_NAME);
                         chatMessage.conversionId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     }
+
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_LAST_MESSAGE);
                     chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
-                    conversations.add(chatMessage);
+
+                    loadChatImageByUser(chatMessage, uidOfImage).addOnCompleteListener(task -> {
+                        conversations.add(chatMessage);
+                        conversationsAdapter.notifyDataSetChanged();
+                    });
                 } else if (documentChange.getType() == DocumentChange.Type.MODIFIED) {
                     for (int i = 0; i < conversations.size(); i++) {
                         String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
